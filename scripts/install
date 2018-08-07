@@ -25,7 +25,7 @@ launch_on_boot=$YNH_APP_ARG_LAUNCH_ON_BOOT
 #=================================================
 # GLOBAL VARS
 #=================================================
-final_path=/var/www/$app
+final_path=/var/lib/$app
 
 
 test ! -e "$final_path" || ynh_die "This path already contains a folder"
