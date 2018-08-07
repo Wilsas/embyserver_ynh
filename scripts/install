@@ -21,7 +21,6 @@ app=$YNH_APP_INSTANCE_NAME
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
 launch_on_boot=$YNH_APP_ARG_LAUNCH_ON_BOOT
-open_webserver_port=$YNH_APP_ARG_OPEN_WEBSERVER_PORT
 
 #=================================================
 # GLOBAL VARS
