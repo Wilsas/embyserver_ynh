@@ -39,7 +39,7 @@
                     "en": "Choose a path for emby-server",
                     "fr": "Choisissez un chemin pour emby-server"
                 },
-                "example": "/example",
+                "example": "/emby",
                 "default": "/emby"
             },
             {
@@ -70,18 +70,14 @@
                 "default": "en"
             },
             {
-                "name": "password",
-                "type": "password",
+                "name": "launch_on_boot",
+                "type": "boolean",
                 "ask": {
-                    "en": "Set the administrator password",
-                    "fr": "Définissez le mot de passe administrateur"
+                    "en": "Launch Emby at YunoHost server startup",
+                    "fr": "Démarrer Emby au démarrage du serveur YunoHost"
                 },
-                "help": {
-                    "en": "Use the help field to add an information for the admin about this question.",
-                    "fr": "Utilisez le champ aide pour ajouter une information à l'intention de l'administrateur à propos de cette question."
-                },
-                "example": "Choose a password"
-            }
+                "default": true
+            },
         ]
     }
 }
