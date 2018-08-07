@@ -4,7 +4,8 @@
 domain=$1
 path=$2
 
-sudo yunohost app checkurl $domain$path -a emby-server
+# Check URL availability
+sudo yunohost app register-url $domain$path -a emby-server
 if [[ ! $? -eq 0 ]]; then
   exit 1
 fi
@@ -22,8 +23,9 @@ path=${path%/}
 sudo yunohost firewall allow TCP 8096 > /dev/null 2>&1
 
 # Install emby
-sudo sh -c 'echo 'deb http://download.opensuse.org/repositories/home:/emby/Debian_9.0/ /' > /etc/apt/sources.list.d/home:emby.list'
-sudo curl https://download.opensuse.org/repositories/home:emby/Debian_9.0/Release.key -O Release.key
+sudo sh -c 'echo "deb http://download.opensuse.org/repositories/home:/emby/Debian_9.0/ /" >> /etc/apt/sources.list.d/home:emby.list'
+sudo wget -nv https://download.opensuse.org/repositories/home:emby/Debian_9.0/Release.key -O Release.key
+sudo apt-key add - < Release.key
 sudo apt-get update
 sudo apt-get install -y emby-server
 
