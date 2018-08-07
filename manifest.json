@@ -69,15 +69,6 @@
                 "choices": ["en", "fr"],
                 "default": "en"
             },
-            {
-                "name": "launch_on_boot",
-                "type": "boolean",
-                "ask": {
-                    "en": "Launch Emby at YunoHost server startup?",
-                    "fr": "Démarrer Emby au démarrage du serveur YunoHost?"
-                },
-                "default": true
-            }
         ]
     }
 }
