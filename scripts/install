@@ -46,7 +46,6 @@ ynh_app_setting_set "$app" domain "$domain"
 ynh_app_setting_set "$app" path_url "$path_url"
 ynh_app_setting_set "$app" final_path "$final_path"
 ynh_app_setting_set "$app" launch_on_boot "$launch_on_boot"
-ynh_app_setting_set "$app" open_webserver_port "$open_webserver_port"
 
 #=================================================
 # STANDARD MODIFICATIONS
