@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# Retrieve arguments
+domain=$1
+path=$2
+
+sudo yunohost app checkurl $domain$path -a emby-server
+if [[ ! $? -eq 0 ]]; then
+  exit 1
+fi
+
+# Check port availability
+sudo yunohost app checkport 8096
+if [[ ! $? -eq 0 ]]; then
+  exit 1
+fi
+
+# Remove trailing "/" for next commands
+path=${path%/}
+
+# Open port in firewall
+sudo yunohost firewall allow TCP 8096 > /dev/null 2>&1
+
+# Install emby
+sudo sh -c 'echo 'deb http://download.opensuse.org/repositories/home:/emby/Debian_9.0/ /' > /etc/apt/sources.list.d/home:emby.list'
+sudo curl https://download.opensuse.org/repositories/home:emby/Debian_9.0/Release.key -O Release.key
+sudo apt-get update
+sudo apt-get install -y emby-server
+
+//locate emby files in /home/yunoshost.app/emby-server
+sudo service emby-server stop
+sudo ln -s /var/lib/emby-server /home/yunohost.app/emby-server 
+sudo service emby-server start
+
+# enable auto start
+sudo chmod +x /etc/init.d/emby-server
+sudo update-rc.d emby-server defaults
+
+# Monitor service
+sudo yunohost service add emby-server
+
+# Disable SSO 
+sudo yunohost app setting emby-server skipped_uris -v "/"
+
+
+# Configure Nginx and generate SSOwat conf
+sudo sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/emby-server.conf
+sudo service nginx reload
+sudo chown root: $nginxconf
+sudo chmod 600 $nginxconf
+echo $?
+sudo yunohost app ssowatconf
