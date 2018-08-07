@@ -1,6 +1,6 @@
 {
     "name": "Emby-server",
-    "id": "kodi",
+    "id": "emby-server",
     "packaging_format": 1,
     "description": {
         "en": "Transform your YunoHost server into media center with Emby",
