@@ -1,0 +1,17 @@
+#!/bin/bash
+
+domain=$(sudo yunohost app setting emby-server domain)
+
+sudo yunohost firewall disallow TCP 8096
+
+sudo yunohost service remove emby-server
+
+sudo rm /etc/nginx/conf.d/$domain.d/emby-server.conf
+
+sudo service emby-server stop
+sudo apt-get remove -y emby-server
+sudo apt-get -y autoremove
+sudo update-rc.d emby-server remove
+
+sudo service nginx reload
+sudo yunohost app ssowatconf
