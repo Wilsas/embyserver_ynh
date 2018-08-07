@@ -51,7 +51,7 @@ ynh_app_setting_set "$app" open_webserver_port "$open_webserver_port"
 
 
 #=================================================
-# CREATE KODI USER
+# CREATE EMBY USER
 #=================================================
 ynh_system_user_create "$app" "$final_path"
 sudo mkdir "$final_path"
@@ -71,7 +71,7 @@ fi
 #=================================================
 # INSTALL EMBY
 #=================================================
-sudo sh -c 'echo "deb http://download.opensuse.org/repositories/home:/emby/Debian_9.0/ /" >> /etc/apt/sources.list.d/home:emby.list'
+sudo cp ../conf/emby.list "/etc/apt/sources.list.d/${app}.list"
 sudo wget -nv https://download.opensuse.org/repositories/home:emby/Debian_9.0/Release.key -O Release.key
 sudo apt-key add - < Release.key
 sudo apt-get update
