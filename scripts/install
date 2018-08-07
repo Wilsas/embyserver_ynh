@@ -1,55 +1,118 @@
 #!/bin/bash
 
-# Retrieve arguments
-domain=$1
-path=$2
+#=================================================
+# GENERIC START
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+source _common.sh
+source /usr/share/yunohost/helpers
 
-# Check URL availability
-sudo yunohost app register-url emby-server $domain$path
-if [[ ! $? -eq 0 ]]; then
-  exit 1
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
+# RETRIEVE ARGUMENTS
+#=================================================
+app=$YNH_APP_INSTANCE_NAME
+domain=$YNH_APP_ARG_DOMAIN
+path_url=$YNH_APP_ARG_PATH
+launch_on_boot=$YNH_APP_ARG_LAUNCH_ON_BOOT
+open_webserver_port=$YNH_APP_ARG_OPEN_WEBSERVER_PORT
+
+#=================================================
+# GLOBAL VARS
+#=================================================
+final_path=/var/lib/$app
+
+
+test ! -e "$final_path" || ynh_die "This path already contains a folder"
+
+# Normalize the url path syntax
+path_url=$(ynh_normalize_url_path "$path_url")
+
+# Check web path availability
+ynh_webpath_available "$domain" "$path_url"
+
+# Register (book) web path
+ynh_webpath_register "$app" "$domain" "$path_url"
+
+#=================================================
+# STORE SETTINGS FROM MANIFEST
+#=================================================
+ynh_app_setting_set "$app" domain "$domain"
+ynh_app_setting_set "$app" path_url "$path_url"
+ynh_app_setting_set "$app" final_path "$final_path"
+ynh_app_setting_set "$app" launch_on_boot "$launch_on_boot"
+ynh_app_setting_set "$app" open_webserver_port "$open_webserver_port"
+
+
+#=================================================
+# CREATE KODI USER
+#=================================================
+ynh_system_user_create "$app" "$final_path"
+sudo mkdir "$final_path"
+sudo chown -R "$app":"$app" "$final_path"
+sudo usermod -a -G cdrom,audio,video,plugdev,users,dialout,dip,input,netdev "$app"
+
+#=================================================
+# ADD SYSTEMD CONFIG
+#=================================================
+ynh_add_systemd_config
+
+if [ "$launch_on_boot" -eq 0 ]
+then
+    sudo systemctl disable "$app"
 fi
 
-# Check port availability
-sudo yunohost app checkport 8096
-if [[ ! $? -eq 0 ]]; then
-  exit 1
-fi
-
-# Remove trailing "/" for next commands
-path=${path%/}
-
-# Open port in firewall
-sudo yunohost firewall allow TCP 8096 > /dev/null 2>&1
-
-# Install emby
+#=================================================
+# INSTALL EMBY
+#=================================================
 sudo sh -c 'echo "deb http://download.opensuse.org/repositories/home:/emby/Debian_9.0/ /" >> /etc/apt/sources.list.d/home:emby.list'
 sudo wget -nv https://download.opensuse.org/repositories/home:emby/Debian_9.0/Release.key -O Release.key
 sudo apt-key add - < Release.key
 sudo apt-get update
 sudo apt-get install -y emby-server
-
-//locate emby files in /home/yunoshost.app/emby-server
-sudo service emby-server stop
 sudo ln -s /var/lib/emby-server /home/yunohost.app/emby-server 
-sudo service emby-server start
 
-# enable auto start
-sudo chmod +x /etc/init.d/emby-server
-sudo update-rc.d emby-server defaults
+#=================================================
+# ADVERTISE SERVICE IN ADMIN PANEL
+#=================================================
+yunohost service add "$app" --log "$final_path/logs/emby.log"
 
-# Monitor service
-sudo yunohost service add emby-server
+#=================================================
+# OPEN PORT IN FIREWALL
+#=================================================
+sudo yunohost firewall allow --no-upnp TCP 8096 > /dev/null 2>&1
 
-# Disable SSO 
-sudo yunohost app setting emby-server skipped_uris -v "/"
+#=================================================
+# NGINX
+#=================================================
+finalnginxconf="/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup_if_checksum_is_different "$finalnginxconf"
+sudo cp ../conf/nginx.conf "$finalnginxconf"
 
+if [ "$path_url" == "/" ]; then
+    ynh_replace_string "__PATH__/" "/" "$finalnginxconf"
+else
+    ynh_replace_string "__PATH__" "$path_url" "$finalnginxconf"
+fi
 
-# Configure Nginx and generate SSOwat conf
-sudo sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/emby-server.conf
-sudo service nginx reload
-sudo chown root: $nginxconf
-sudo chmod 600 $nginxconf
-echo $?
-sudo yunohost app ssowatconf
+ynh_app_setting_set "$app" protected_uris "/"
+
+domainregex=$(echo "$domain" | sed 's/-/\%&/g')
+ynh_app_setting_set "$app" skipped_regex "$domainregex/jsonrpc.*$,$domainregex/image.*$"
+
+# Reload SSOwat config
+yunohost app ssowatconf
+
+# Reload Nginx
+systemctl reload nginx
+
+#=================================================
+# START EMBY
+#=================================================
+sudo systemctl start "$app"
