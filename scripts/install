@@ -5,7 +5,7 @@ domain=$1
 path=$2
 
 # Check URL availability
-sudo yunohost app register-url $domain$path -a emby-server
+sudo yunohost app register-url emby-server $domain$path
 if [[ ! $? -eq 0 ]]; then
   exit 1
 fi
