@@ -26,7 +26,7 @@ open_webserver_port=$YNH_APP_ARG_OPEN_WEBSERVER_PORT
 #=================================================
 # GLOBAL VARS
 #=================================================
-final_path=/var/lib/$app
+final_path=/var/www/$app
 
 
 test ! -e "$final_path" || ynh_die "This path already contains a folder"
@@ -49,14 +49,27 @@ ynh_app_setting_set "$app" final_path "$final_path"
 ynh_app_setting_set "$app" launch_on_boot "$launch_on_boot"
 ynh_app_setting_set "$app" open_webserver_port "$open_webserver_port"
 
+#=================================================
+# STANDARD MODIFICATIONS
+#=================================================
+# FIND AND OPEN A PORT
+#=================================================
+
+### Use these lines if you have to open a port for the application
+### `ynh_find_port` will find the first available port starting from the given port.
+### If you're not using these lines:
+###		- Remove the section "CLOSE A PORT" in the remove script
+
+# Find a free port
+port=$(ynh_find_port 8095)
+# Open this port
+yunohost firewall allow --no-upnp TCP $port 2>&1
+ynh_app_setting_set $app port $port
 
 #=================================================
 # CREATE EMBY USER
 #=================================================
-ynh_system_user_create "$app" "$final_path"
-sudo mkdir "$final_path"
-sudo chown -R "$app":"$app" "$final_path"
-sudo usermod -a -G cdrom,audio,video,plugdev,users,dialout,dip,input,netdev "$app"
+ynh_system_user_create "$app"
 
 #=================================================
 # ADD SYSTEMD CONFIG
@@ -82,11 +95,6 @@ sudo ln -s /var/lib/emby-server /home/yunohost.app/emby-server
 # ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
 yunohost service add "$app" --log "$final_path/logs/emby.log"
-
-#=================================================
-# OPEN PORT IN FIREWALL
-#=================================================
-sudo yunohost firewall allow --no-upnp TCP 8096 > /dev/null 2>&1
 
 #=================================================
 # NGINX
