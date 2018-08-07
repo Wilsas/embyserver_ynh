@@ -10,7 +10,7 @@
 		admin="john"	(USER)
 		language="fr"
 		is_public=1	(PUBLIC|public=1|private=0)
-		launch_on_boot=1	(PUBLIC|public=1|private=0)
+		launch_on_boot=1
 		password="pass"
 		port="8096"	(PORT)
 	; Checks
