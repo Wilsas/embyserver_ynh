@@ -40,7 +40,7 @@
                     "fr": "Choisissez un chemin pour emby-server"
                 },
                 "example": "/example",
-                "default": "/example"
+                "default": "/emby"
             },
             {
                 "name": "admin",
