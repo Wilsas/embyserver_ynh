@@ -87,9 +87,19 @@ fi
 #=================================================
 # INSTALL EMBY
 #=================================================
-sudo cp ../conf/emby.list "/etc/apt/sources.list.d/${app}.list"
-sudo wget -nv https://download.opensuse.org/repositories/home:emby/Debian_9.0/Release.key -O Release.key
-sudo apt-key add - < Release.key
+if [ "$(lsb_release --codename --short)" == "jessie" ]; 
+then
+	echo "deb http://download.opensuse.org/repositories/home:/emby/Debian_8.0/ /" | tee /etc/apt/sources.list.d/emby.list
+	sudo wget -nv https://download.opensuse.org/repositories/home:emby/Debian_8.0/Release.key -O Release.key
+	sudo apt-key add - < Release.key
+fi
+
+if [ "$(lsb_release --codename --short)" == "stretch" ]; 
+then
+	sudo cp ../conf/emby.list "/etc/apt/sources.list.d/${app}.list"
+	sudo wget -nv https://download.opensuse.org/repositories/home:emby/Debian_9.0/Release.key -O Release.key
+	sudo apt-key add - < Release.key
+fi
 ynh_package_update
 ynh_package_install $app
 
