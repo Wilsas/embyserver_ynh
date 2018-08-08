@@ -66,6 +66,9 @@ port=$(ynh_find_port 8096)
 yunohost firewall allow --no-upnp TCP $port 2>&1
 ynh_app_setting_set $app port $port
 
+# Open port 8920 for https (this is just a guess/precaution)
+yunohost firewall allow --no-upnp TCP 8920 2>&1
+
 #=================================================
 # CREATE EMBY USER
 #=================================================
