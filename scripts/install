@@ -19,6 +19,7 @@ ynh_abort_if_errors
 #=================================================
 app=$YNH_APP_INSTANCE_NAME
 domain=$YNH_APP_ARG_DOMAIN
+is_public=$YNH_APP_ARG_IS_PUBLIC
 path_url=$YNH_APP_ARG_PATH
 launch_on_boot=$YNH_APP_ARG_LAUNCH_ON_BOOT
 
@@ -44,6 +45,7 @@ ynh_webpath_register "$app" "$domain" "$path_url"
 #=================================================
 ynh_app_setting_set "$app" domain "$domain"
 ynh_app_setting_set "$app" path_url "$path_url"
+ynh_app_setting_set "$app" is_public "$is_public"
 ynh_app_setting_set "$app" final_path "$final_path"
 ynh_app_setting_set "$app" launch_on_boot "$launch_on_boot"
 
@@ -108,8 +110,18 @@ fi
 
 ynh_app_setting_set "$app" protected_uris "/"
 
-domainregex=$(echo "$domain" | sed 's/-/\%&/g')
-ynh_app_setting_set "$app" skipped_regex "$domainregex/jsonrpc.*$,$domainregex/image.*$"
+#=================================================
+# SETUP SSOWAT
+#=================================================
+
+# Make app public if necessary
+if [ "$is_public" -eq 1 ]
+then
+	# unprotected_uris allows SSO credentials to be passed anyway.
+	ynh_app_setting_set "$app" unprotected_uris "/"
+else
+    ynh_app_setting_set "$app" protected_uris "/"
+fi
 
 # Reload SSOwat config
 yunohost app ssowatconf
