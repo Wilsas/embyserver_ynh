@@ -93,7 +93,7 @@ ynh_package_install $app
 #=================================================
 # ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
-yunohost service add "$app" --log "$final_path/logs/emby.log"
+yunohost service add "$app" --log "$final_path/logs/$app.log"
 
 #=================================================
 # NGINX
@@ -108,14 +108,12 @@ else
     ynh_replace_string "__PATH__" "$path_url" "$finalnginxconf"
 fi
 
-ynh_app_setting_set "$app" protected_uris "/"
-
 #=================================================
 # SETUP SSOWAT
 #=================================================
 
 # Make app public if necessary
-if [ "$is_public" -eq 1 ]
+if [ "$is_public" == "1" ]
 then
 	# unprotected_uris allows SSO credentials to be passed anyway.
 	ynh_app_setting_set "$app" unprotected_uris "/"
