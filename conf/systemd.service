@@ -1,11 +1,8 @@
 [Unit]
-Description=Emby Server is a personal media server with apps on just about every device.
+Description=Emby Media Server
 After=network.target
 
 [Service]
-Type=simple
-User=__APP__
-Group=__APP__
 ExecStart=/usr/bin/emby-server start
 Restart=always
 TimeoutSec=20
